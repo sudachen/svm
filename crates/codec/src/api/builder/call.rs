@@ -1,4 +1,4 @@
-use svm_types::{AccountAddr, Transaction};
+use svm_types::{Address, Transaction};
 
 use crate::call;
 
@@ -7,7 +7,7 @@ use crate::call;
 /// Should be used mainly for testing only.
 pub struct CallBuilder {
     version: Option<u16>,
-    target: Option<AccountAddr>,
+    target: Option<Address>,
     func_name: Option<String>,
     // verifydata: Option<Vec<u8>>,
     calldata: Option<Vec<u8>>,
@@ -23,7 +23,7 @@ pub struct CallBuilder {
 /// use svm_codec::api::builder::CallBuilder;
 /// use svm_codec::call;
 ///
-/// let target = Address::of("@target").into();
+/// let target = Address::of("@target");
 ///
 /// let func_name = "do_work";
 /// // let verifydata = vec![0x10, 0x20, 0x30];
@@ -68,7 +68,7 @@ impl CallBuilder {
         self
     }
 
-    pub fn with_target(mut self, target: &AccountAddr) -> Self {
+    pub fn with_target(mut self, target: &Address) -> Self {
         self.target = Some(target.clone());
         self
     }

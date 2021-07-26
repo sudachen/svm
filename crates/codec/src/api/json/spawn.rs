@@ -7,7 +7,7 @@ use svm_types::{Account, SpawnAccount, TemplateAddr};
 
 use super::call::EncodedOrDecodedCalldata;
 use super::calldata::DecodedCallData;
-use super::serde_types::{AddressWrapper, EncodedData};
+use super::serde_types::EncodedData;
 use super::{JsonError, JsonSerdeUtils};
 use crate::spawn;
 
@@ -45,7 +45,7 @@ pub fn decode_spawn(json: &str) -> Result<Value, JsonError> {
 struct DecodedSpawn {
     version: u16,
     #[serde(rename = "template")]
-    template_addr: AddressWrapper,
+    template_addr: TemplateAddr,
     name: String,
     ctor_name: String,
     calldata: EncodedOrDecodedCalldata,
@@ -55,7 +55,7 @@ impl JsonSerdeUtils for DecodedSpawn {}
 
 impl From<SpawnAccount> for DecodedSpawn {
     fn from(spawn: SpawnAccount) -> Self {
-        let template_addr = AddressWrapper(spawn.account.template_addr().inner().clone());
+        let template_addr = spawn.template_addr().clone();
         let decoded_calldata = super::calldata::decode_raw_calldata(&spawn.calldata).unwrap();
 
         Self {

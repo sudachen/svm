@@ -68,9 +68,9 @@
 //!   +-------------------+-------------------+------------+
 //!
 
-use svm_types::{AccountAddr, Address, ReceiptLog, RuntimeError, TemplateAddr};
-
 use std::io::Cursor;
+
+use svm_types::{Address, ReceiptLog, RuntimeError, TemplateAddr};
 
 use super::logs;
 use crate::{ReadExt, WriteExt};
@@ -192,11 +192,12 @@ fn template_not_found(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
 fn account_not_found(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
     let account = decode_account_addr(cursor);
 
-    RuntimeError::AccountNotFound(account.into())
+    RuntimeError::AccountNotFound(account)
 }
 
 fn compilation_error(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
-    let (template_addr, account_addr) = decode_addrs(cursor);
+    let template_addr = decode_template_addr(cursor);
+    let account_addr = decode_account_addr(cursor);
     let msg = decode_msg(cursor);
 
     RuntimeError::CompilationFailed {
@@ -207,7 +208,8 @@ fn compilation_error(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
 }
 
 fn instantiation_error(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
-    let (template_addr, account_addr) = decode_addrs(cursor);
+    let template_addr = decode_template_addr(cursor);
+    let account_addr = decode_account_addr(cursor);
     let msg = decode_msg(cursor);
 
     RuntimeError::InstantiationFailed {
@@ -218,7 +220,8 @@ fn instantiation_error(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
 }
 
 fn func_not_found(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
-    let (template_addr, account_addr) = decode_addrs(cursor);
+    let template_addr = decode_template_addr(cursor);
+    let account_addr = decode_account_addr(cursor);
     let func = decode_func(cursor);
 
     RuntimeError::FuncNotFound {
@@ -229,7 +232,8 @@ fn func_not_found(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
 }
 
 fn func_failed(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
-    let (template_addr, account_addr) = decode_addrs(cursor);
+    let template_addr = decode_template_addr(cursor);
+    let account_addr = decode_account_addr(cursor);
     let func = decode_func(cursor);
     let msg = decode_msg(cursor);
 
@@ -242,7 +246,8 @@ fn func_failed(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
 }
 
 fn func_not_allowed(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
-    let (template_addr, account_addr) = decode_addrs(cursor);
+    let template_addr = decode_template_addr(cursor);
+    let account_addr = decode_account_addr(cursor);
     let func = decode_func(cursor);
     let msg = decode_msg(cursor);
 
@@ -255,7 +260,8 @@ fn func_not_allowed(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
 }
 
 fn func_invalid_sig(cursor: &mut Cursor<&[u8]>) -> RuntimeError {
-    let (template_addr, account_addr) = decode_addrs(cursor);
+    let template_addr = decode_template_addr(cursor);
+    let account_addr = decode_account_addr(cursor);
     let func = decode_func(cursor);
 
     RuntimeError::FuncInvalidSignature {
@@ -269,19 +275,12 @@ fn decode_func(cursor: &mut Cursor<&[u8]>) -> String {
     cursor.read_string().unwrap().unwrap()
 }
 
-fn decode_addrs(cursor: &mut Cursor<&[u8]>) -> (TemplateAddr, AccountAddr) {
-    let template_addr = decode_template_addr(cursor);
-    let account_addr = decode_account_addr(cursor);
-
-    (template_addr.into(), account_addr.into())
-}
-
-fn decode_template_addr(cursor: &mut Cursor<&[u8]>) -> Address {
-    cursor.read_address().unwrap()
-}
-
 fn decode_account_addr(cursor: &mut Cursor<&[u8]>) -> Address {
     cursor.read_address().unwrap()
+}
+
+fn decode_template_addr(cursor: &mut Cursor<&[u8]>) -> TemplateAddr {
+    cursor.read_template_addr().unwrap()
 }
 
 fn decode_msg(cursor: &mut Cursor<&[u8]>) -> String {

@@ -9,7 +9,7 @@ use svm_abi_encoder::{ByteSize, Encoder};
 use svm_sdk_types::value::{Composite, Primitive, Value as SdkValue};
 use svm_sdk_types::{Address, Amount};
 
-use super::serde_types::{AddressWrapper, EncodedData, HexBlob};
+use super::serde_types::{EncodedData, HexBlob};
 use super::JsonSerdeUtils;
 use crate::api::json::JsonError;
 
@@ -121,7 +121,7 @@ mod sdk_value_utils {
                 Primitive::I64(x) => json!(x),
                 Primitive::U64(x) => json!(x),
                 Primitive::Amount(x) => json!(x.0),
-                Primitive::Address(x) => AddressWrapper(Address::from(x.as_slice())).to_json(),
+                Primitive::Address(x) => Address::from(x.as_slice()).to_json(),
                 _ => unreachable!(),
             },
             SdkValue::Composite(Composite::Vec(values)) => Json::Array(
@@ -178,12 +178,10 @@ mod sdk_value_utils {
             TySigPrim::Amount => json
                 .as_u64()
                 .map(|val| SdkValue::Primitive(Primitive::Amount(Amount(val)))),
-            TySigPrim::Address => serde_json::from_value::<AddressWrapper>(json)
-                .ok()
-                .map(|addr| {
-                    let addr = svm_sdk_types::Address::from(addr.0.bytes());
-                    SdkValue::Primitive(Primitive::Address(addr))
-                }),
+            TySigPrim::Address => serde_json::from_value::<Address>(json).ok().map(|addr| {
+                let addr = svm_sdk_types::Address::from(addr.0.bytes());
+                SdkValue::Primitive(Primitive::Address(addr))
+            }),
             TySigPrim::I8 => json_as_numeric::<i8>(json),
             TySigPrim::U8 => json_as_numeric::<u8>(json),
             TySigPrim::I16 => json_as_numeric::<i16>(json),
@@ -273,7 +271,7 @@ enum TyPrimSdkValue {
     I64(i64),
     U64(u64),
     Amount(u64),
-    Address(AddressWrapper),
+    Address(Address),
 }
 
 fn encode_value(ty: TySig, value: Json) -> Result<SdkValue, JsonError> {

@@ -3,7 +3,7 @@ use serde_json::Value as Json;
 
 use std::io::Cursor;
 
-use svm_types::Transaction;
+use svm_types::{Address, Transaction};
 
 use super::calldata::{decode_raw_calldata, DecodedCallData};
 use super::serde_types::*;
@@ -75,7 +75,7 @@ pub fn decode_call(json: &str) -> Result<Json, JsonError> {
 #[derive(Clone, Serialize, Deserialize)]
 struct DecodedCall {
     version: u16,
-    target: AddressWrapper,
+    target: Address,
     func_name: String,
     // verifydata: String,
     calldata: EncodedOrDecodedCalldata,
@@ -99,7 +99,7 @@ impl From<Transaction> for DecodedCall {
     fn from(tx: Transaction) -> Self {
         DecodedCall {
             version: tx.version,
-            target: AddressWrapper::from(&tx.target),
+            target: Address::from(&tx.target),
             func_name: tx.func_name.clone(),
             calldata: EncodedOrDecodedCalldata::Decoded(
                 DecodedCallData::new(&decode_raw_calldata(&tx.calldata).unwrap().to_string())

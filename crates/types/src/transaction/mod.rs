@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::AccountAddr;
+use crate::Address;
 
 mod context;
 mod envelope;
@@ -19,7 +19,7 @@ pub struct Transaction {
     pub version: u16,
 
     /// The target `Account`.
-    pub target: AccountAddr,
+    pub target: Address,
 
     /// Function's name to execute
     pub func_name: String,
@@ -34,7 +34,7 @@ pub struct Transaction {
 
 impl Transaction {
     #[doc(hidden)]
-    pub fn target(&self) -> &AccountAddr {
+    pub fn target(&self) -> &Address {
         &self.target
     }
 
@@ -63,7 +63,7 @@ impl fmt::Debug for Transaction {
 
         f.debug_struct("Transaction")
             .field("version", &self.version)
-            .field("target", self.target.inner())
+            .field("target", self.target())
             // TODO:
             // See issue: https://github.com/spacemeshos/svm/issues/248
             // .field("verifydata", &verifydata)
